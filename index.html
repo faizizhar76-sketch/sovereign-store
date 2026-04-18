@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Sovereign Store</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Modal untuk konfirmasi pembelian -->
+<div id="purchase-modal" class="modal">
+    <div class="modal-content">
+        <h2>Konfirmasi Pembelian</h2>
+        <p id="purchase-details"></p>
+        <label for="payment-method">Pilih Metode Pembayaran:</label>
+        <select id="payment-method">
+            <option value="qris">QRIS</option>
+            <option value="dana">Dana</option>
+            <option value="gopay">GoPay</option>
+        </select>
+        <div id="payment-details" style="margin-top: 20px;"></div>
+        <div class="auth-buttons">
+            <button id="confirm-purchase">Bayar Sekarang</button>
+            <button id="cancel-purchase">Batal</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal untuk success -->
+<div id="success-modal" class="modal">
+    <div class="modal-content">
+        <h2>✅ Pembelian Berhasil!</h2>
+        <p>Item telah dikirim ke akun Minecraft Anda.</p>
+        <button id="close-success">Tutup</button>
+    </div>
+</div>
+
+<!-- Modal untuk upload bukti pembayaran -->
+<div id="proof-modal" class="modal">
+    <div class="modal-content">
+        <h2>Upload Bukti Pembayaran</h2>
+        <p>Silakan upload foto bukti transfer dan masukkan nominal yang Anda transfer.</p>
+        <p style="font-size: 0.95rem; color: #ddd; margin-top: -10px; margin-bottom: 10px;">OCR akan membaca nominal dan tanggal dari foto bukti untuk verifikasi otomatis.</p>
+        <form id="proof-form">
+            <label for="transfer-amount">Nominal Transfer (Rp):</label>
+            <input type="number" id="transfer-amount" required placeholder="Contoh: 55000">
+            
+            <label for="proof-image">Upload Foto Bukti:</label>
+            <input type="file" id="proof-image" accept="image/*" required>
+            
+            <div class="auth-buttons">
+                <button type="button" id="send-proof">Kirim Bukti</button>
+                <button type="button" id="cancel-proof">Batal</button>
+            </div>
+        </form>
+        <p id="proof-message" style="color: red; display: none;"></p>
+    </div>
+</div>
+
+<!-- Modal untuk menunggu konfirmasi -->
+<div id="waiting-modal" class="modal">
+    <div class="modal-content">
+        <h2>⏳ Menunggu Konfirmasi Admin</h2>
+        <p>Bukti pembayaran telah dikirim ke admin. Silakan tunggu konfirmasi.</p>
+        <p>Status akan update otomatis.</p>
+        <button id="close-waiting">Tutup</button>
+    </div>
+</div>
+<div id="auth-modal" class="modal">
+    <div class="modal-content">
+        <h2 id="modal-title">Login ke Sovereign Store</h2>
+        <p id="modal-subtitle">Masukkan username Minecraft, password, dan pilih region.</p>
+        <form id="auth-form">
+            <label for="username">Username Minecraft:</label>
+            <input type="text" id="username" required>
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" required>
+            
+            <label for="region">Region:</label>
+            <select id="region" required>
+                <option value="">Pilih Region</option>
+                <option value="ID">Indonesia (Rp)</option>
+                <option value="MY">Malaysia (RM)</option>
+                <option value="SG">Singapore (SGD)</option>
+            </select>
+            
+            <div class="auth-buttons">
+                <button type="button" id="login-btn">Login</button>
+                <button type="button" id="register-btn">Daftar</button>
+            </div>
+        </form>
+        <p id="auth-message" style="color: red; display: none;"></p>
+    </div>
+</div>
+
+<header>
+    <h1>Sovereign Store</h1>
+    <p class="subtitle">Beli item Minecraft dengan mudah, upload bukti transfer, dan konfirmasi otomatis lewat Discord.</p>
+    <div id="user-info" style="display: none;">
+        <span>Welcome, <span id="display-username"></span>!</span>
+        <select id="region-select" style="margin-left: 1rem;">
+            <option value="ID">Indonesia (RP)</option>
+            <option value="MY">Malaysia (RM)</option>
+            <option value="SG">Singapore (SGD)</option>
+        </select>
+        <button id="logout-btn">Logout</button>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- CATEGORY -->
+    <div class="categories">
+        <button onclick="show('cosmetic')" class="active">Cosmetic</button>
+        <button onclick="show('kits')">Kits</button>
+        <button onclick="show('items')">Item Random</button>
+    </div>
+
+    <!-- COSMETIC -->
+    <div id="cosmetic" class="section active">
+        <h2>Cosmetic</h2>
+        <div class="card">
+            <p class="coming">🚧 Coming Soon</p>
+        </div>
+    </div>
+
+    <!-- KITS -->
+    <div id="kits" class="section">
+        <h2>Kits</h2>
+
+        <div class="grid">
+
+            <div class="card">
+                <img src="LyeVer.png">
+                <div class="card-body">
+                    <h3>LyeVer</h3>
+                    <p class="description">Paket kit lengkap untuk bermain stylish dengan efek khusus.</p>
+                    <p><span class="price" data-idr="35000">Rp 35.000</span></p>
+                    <button>Beli</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="LyeVel.png">
+                <div class="card-body">
+                    <h3>LyeVel</h3>
+                    <p class="description">Kit hemat untuk pemain yang ingin performa cepat di server.</p>
+                    <p><span class="price" data-idr="15000">Rp 15.000</span></p>
+                    <button>Beli</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="LyeBorn.png">
+                <div class="card-body">
+                    <h3>LyeBorn</h3>
+                    <p class="description">Kit premium dengan bonus item langka untuk pengalaman maksimal.</p>
+                    <p><span class="price" data-idr="55000">Rp 55.000</span></p>
+                    <button>Beli</button>
+                </div>
+            </div>
+            
+
+        </div>
+    </div>
+
+    <!-- ITEMS -->
+    <div id="items" class="section">
+        <h2>Item Random</h2>
+
+        <div class="grid">
+
+            <div class="card">
+                <img src="img/totem.png">
+                <div class="card-body">
+                    <h3>Totem of Undying</h3>
+                    <p class="description">Item langka agar kamu bisa tetap hidup ketika death hampir terjadi.</p>
+                    <button>Beli</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="img/trim.png">
+                <div class="card-body">
+                    <h3>Silent Armor Trim</h3>
+                    <p class="description">Hiasan armor keren untuk tampil beda di medan perang.</p>
+                    <button>Beli</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Konfigurasi API - Ganti dengan URL backend yang di-host
+const API_BASE_URL = 'https://your-backend-url.herokuapp.com'; // Ganti dengan URL backend Anda
+
+function show(section) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(section).classList.add('active');
+    document.querySelectorAll('.categories button').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.categories button[onclick="show('${section}')"]`).classList.add('active');
+}
+
+// Fungsi untuk konversi harga berdasarkan region
+function convertPrices(region) {
+    const prices = document.querySelectorAll('.price');
+    prices.forEach(price => {
+        const idr = parseInt(price.getAttribute('data-idr'));
+        let converted = '';
+        if (region === 'ID') {
+            converted = `Rp ${idr.toLocaleString('id-ID')}`;
+        } else if (region === 'MY') {
+            const myr = (idr / 3500).toFixed(2);
+            converted = `RM ${myr}`;
+        } else if (region === 'SG') {
+            const sgd = (idr / 10000).toFixed(2);
+            converted = `SGD ${sgd}`;
+        }
+        price.textContent = converted;
+    });
+}
+
+// Fungsi untuk simpan user
+function saveUser(username, password, region) {
+    const users = JSON.parse(localStorage.getItem('sovereign_users') || '[]');
+    users.push({ username, password, region });
+    localStorage.setItem('sovereign_users', JSON.stringify(users));
+}
+
+// Fungsi untuk cek login
+function checkLogin(username, password) {
+    const users = JSON.parse(localStorage.getItem('sovereign_users') || '[]');
+    return users.find(user => user.username === username && user.password === password);
+}
+
+// Fungsi untuk login user
+function loginUser(user) {
+    localStorage.setItem('logged_in_user', JSON.stringify(user));
+    document.getElementById('display-username').textContent = user.username;
+    document.getElementById('user-info').style.display = 'block';
+    document.getElementById('region-select').value = user.region;
+    document.getElementById('auth-modal').classList.remove('show');
+    convertPrices(user.region);
+}
+
+// Fungsi logout
+function logout() {
+    localStorage.removeItem('logged_in_user');
+    document.getElementById('user-info').style.display = 'none';
+    document.getElementById('auth-modal').classList.add('show');
+    document.getElementById('modal-title').textContent = 'Login ke Sovereign Store';
+    document.getElementById('modal-subtitle').textContent = 'Masukkan username Minecraft, password, dan pilih region.';
+    document.getElementById('auth-message').style.display = 'none';
+}
+
+// Cek session saat load
+window.addEventListener('load', function() {
+    const loggedUser = JSON.parse(localStorage.getItem('logged_in_user') || 'null');
+    if (loggedUser) {
+        loginUser(loggedUser);
+    } else {
+        document.getElementById('auth-modal').classList.add('show');
+    }
+});
+
+// Handle login button
+document.getElementById('login-btn').addEventListener('click', function() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const region = document.getElementById('region').value;
+    
+    if (!username || !password || !region) {
+        showMessage('Semua field harus diisi!');
+        return;
+    }
+    
+    const user = checkLogin(username, password);
+    if (user) {
+        loginUser(user);
+    } else {
+        showMessage('Username atau password salah!');
+    }
+});
+
+// Handle register button
+document.getElementById('register-btn').addEventListener('click', function() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const region = document.getElementById('region').value;
+    
+    if (!username || !password || !region) {
+        showMessage('Semua field harus diisi!');
+        return;
+    }
+    
+    const users = JSON.parse(localStorage.getItem('sovereign_users') || '[]');
+    if (users.find(u => u.username === username)) {
+        showMessage('Username sudah terdaftar!');
+        return;
+    }
+    
+    saveUser(username, password, region);
+    showMessage('Pendaftaran berhasil! Silakan login.');
+});
+
+// Handle logout
+document.getElementById('logout-btn').addEventListener('click', logout);
+
+// Handle region change
+document.getElementById('region-select').addEventListener('change', function() {
+    const newRegion = this.value;
+    const loggedUser = JSON.parse(localStorage.getItem('logged_in_user'));
+    if (loggedUser) {
+        loggedUser.region = newRegion;
+        localStorage.setItem('logged_in_user', JSON.stringify(loggedUser));
+        // Update region di users array juga
+        const users = JSON.parse(localStorage.getItem('sovereign_users') || '[]');
+        const userIndex = users.findIndex(u => u.username === loggedUser.username);
+        if (userIndex !== -1) {
+            users[userIndex].region = newRegion;
+            localStorage.setItem('sovereign_users', JSON.stringify(users));
+        }
+        convertPrices(newRegion);
+    }
+});
+
+// Fungsi untuk tampilkan pesan
+function showMessage(msg) {
+    const msgEl = document.getElementById('auth-message');
+    msgEl.textContent = msg;
+    msgEl.style.display = 'block';
+}
+
+// Handle klik beli
+document.addEventListener('click', function(e) {
+    if (e.target.matches('.card button')) {
+        const card = e.target.closest('.card');
+        const itemName = card.querySelector('h3').textContent;
+        const price = card.querySelector('.price').textContent;
+        const username = document.getElementById('display-username').textContent;
+        
+        document.getElementById('purchase-details').innerHTML = `
+            Item: <strong>${itemName}</strong><br>
+            Harga: <strong>${price}</strong><br>
+            Username: <strong>${username}</strong>
+        `;
+        updatePaymentDetails(); // Update detail payment saat modal buka
+        document.getElementById('purchase-modal').classList.add('show');
+    }
+});
+
+// Fungsi update detail payment
+function updatePaymentDetails() {
+    const method = document.getElementById('payment-method').value;
+    const detailsDiv = document.getElementById('payment-details');
+    
+    if (method === 'qris') {
+        detailsDiv.innerHTML = `
+            <p>Scan QR Code berikut untuk pembayaran:</p>
+            <img id="qris-img" src="Qris.png" alt="QRIS Code" style="width: 150px; height: 150px; display: block; margin: 0 auto;">
+            <button id="download-qr" style="margin-top: 10px; padding: 8px 16px; background: #ffd700; border: none; border-radius: 5px; cursor: pointer;">Download QR Code</button>
+            <p>QRIS Universal - Sovereign Store</p>
+        `;
+    } else if (method === 'dana') {
+        detailsDiv.innerHTML = `
+            <p>Transfer ke nomor Dana berikut:</p>
+            <p style="font-size: 1.2rem; font-weight: bold; color: #ffd700;">0896-6938-1078</p>
+            <p>Silakan transfer sesuai nominal dan konfirmasi.</p>
+        `;
+    } else if (method === 'gopay') {
+        detailsDiv.innerHTML = `
+            <p>Transfer ke nomor GoPay berikut:</p>
+            <p style="font-size: 1.2rem; font-weight: bold; color: #ffd700;">0896-6938-1078</p>
+            <p>Silakan transfer sesuai nominal dan konfirmasi.</p>
+        `;
+    }
+}
+
+// Handle change payment method
+document.getElementById('payment-method').addEventListener('change', updatePaymentDetails);
+
+// Handle download QR
+document.addEventListener('click', function(e) {
+    if (e.target.id === 'download-qr') {
+        const img = document.getElementById('qris-img');
+        const link = document.createElement('a');
+        link.href = img.src;
+        link.download = 'QRIS_Sovereign_Store.png';
+        link.click();
+    }
+});
+
+// Handle konfirmasi pembelian
+document.getElementById('confirm-purchase').addEventListener('click', async function() {
+    const method = document.getElementById('payment-method').value;
+    const itemName = document.getElementById('purchase-details').querySelector('strong').textContent; // Ambil item dari details
+    const price = document.getElementById('purchase-details').querySelectorAll('strong')[1].textContent;
+    const username = document.getElementById('display-username').textContent;
+    
+    document.getElementById('purchase-modal').classList.remove('show');
+    
+    // Simpan data pembelian untuk modal proof
+    localStorage.setItem('pending_purchase', JSON.stringify({ username, itemName, price, method }));
+    
+    // Kirim notifikasi pembelian ke Discord
+    await sendDiscordNotification(username, itemName, price, method);
+    
+    // Tampilkan modal upload bukti
+    document.getElementById('proof-modal').classList.add('show');
+});
+
+// Fungsi kirim notifikasi ke Discord
+async function sendDiscordNotification(username, item, price, method) {
+    const webhookUrl = 'https://discord.com/api/webhooks/1494237126643155014/Ibgw1m1ceUM8IPbuIz14y_K0tDQ39EXu8gzJBN4j_aTntDOtTAu4_xyG43PZjlCW7S7r';
+    
+    const embed = {
+        title: '🔔 Pembelian Baru - Sovereign Store',
+        color: 0xffd700,
+        fields: [
+            { name: 'Username Minecraft', value: username, inline: true },
+            { name: 'Item', value: item, inline: true },
+            { name: 'Harga', value: price, inline: true },
+            { name: 'Metode Pembayaran', value: method.toUpperCase(), inline: true },
+            { name: 'Status', value: 'Menunggu Konfirmasi Admin', inline: false }
+        ],
+        footer: { text: 'Konfirmasi pembayaran di dashboard admin.' },
+        timestamp: new Date().toISOString()
+    };
+    
+    try {
+        await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ embeds: [embed] })
+        });
+    } catch (error) {
+        console.error('Error sending Discord notification:', error);
+    }
+}
+
+// Fungsi poll status
+function pollStatus(id) {
+    const interval = setInterval(async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/status/${id}`);
+            const data = await response.json();
+            if (data.confirmed) {
+                clearInterval(interval);
+                document.getElementById('waiting-modal').classList.remove('show');
+                // Kirim item ke Minecraft
+                const pending = JSON.parse(localStorage.getItem('pending_purchase'));
+                await sendToMinecraft(pending.username, pending.itemName);
+                document.getElementById('success-modal').classList.add('show');
+                localStorage.removeItem('pending_purchase');
+                localStorage.removeItem('purchase_id');
+            } else if (data.rejected) {
+                clearInterval(interval);
+                document.getElementById('waiting-modal').classList.remove('show');
+                alert('Pembayaran ditolak oleh admin. Silakan cek kembali.');
+                localStorage.removeItem('pending_purchase');
+                localStorage.removeItem('purchase_id');
+            }
+        } catch (error) {
+            console.error('Error polling status:', error);
+        }
+    }, 5000); // Poll every 5 seconds
+}
+
+// Fungsi kirim ke Minecraft (placeholder)
+async function sendToMinecraft(username, item) {
+    // Placeholder: ganti dengan API Minecraft
+    console.log(`Sending ${item} to ${username}`);
+}
+
+// Handle cancel
+document.getElementById('cancel-purchase').addEventListener('click', function() {
+    document.getElementById('purchase-modal').classList.remove('show');
+});
+// Handle cancel proof
+document.getElementById('cancel-proof').addEventListener('click', function() {
+    document.getElementById('proof-modal').classList.remove('show');
+    localStorage.removeItem('pending_purchase');
+});
+
+// Handle send proof
+document.getElementById('send-proof').addEventListener('click', async function() {
+    const transferAmount = parseInt(document.getElementById('transfer-amount').value);
+    const proofImage = document.getElementById('proof-image').files[0];
+    
+    if (!transferAmount || !proofImage) {
+        showProofMessage('Semua field harus diisi!');
+        return;
+    }
+    
+    const pending = JSON.parse(localStorage.getItem('pending_purchase'));
+    if (!pending) {
+        showProofMessage('Data pembelian tidak ditemukan!');
+        return;
+    }
+    
+    // Hitung harga dalam IDR
+    const priceText = pending.price;
+    let expectedAmount = 0;
+    if (priceText.startsWith('Rp')) {
+        expectedAmount = parseInt(priceText.replace('Rp ', '').replace(/\./g, ''));
+    } else if (priceText.startsWith('RM')) {
+        // Konversi RM ke IDR (asumsi 1 RM = 3500 IDR)
+        const rm = parseFloat(priceText.replace('RM ', ''));
+        expectedAmount = Math.round(rm * 3500);
+    } else if (priceText.startsWith('SGD')) {
+        // Konversi SGD ke IDR (asumsi 1 SGD = 10000 IDR)
+        const sgd = parseFloat(priceText.replace('SGD ', ''));
+        expectedAmount = Math.round(sgd * 10000);
+    }
+    
+    const difference = transferAmount - expectedAmount;
+    const status = difference === 0 ? 'Nominal Sesuai' : (difference > 0 ? `Lebih Rp ${difference.toLocaleString('id-ID')}` : `Kurang Rp ${Math.abs(difference).toLocaleString('id-ID')}`);
+    
+    document.getElementById('proof-modal').classList.remove('show');
+    
+    // Submit proof with image to server
+    const formData = new FormData();
+    formData.append('username', pending.username);
+    formData.append('item', pending.itemName);
+    formData.append('price', pending.price);
+    formData.append('method', pending.method);
+    formData.append('transferAmount', transferAmount);
+    formData.append('expectedAmount', expectedAmount);
+    formData.append('status', status);
+    formData.append('proof', proofImage);
+    
+    let purchaseId;
+    try {
+        const response = await fetch(`${API_BASE_URL}/submit-proof`, {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        purchaseId = data.id;
+    } catch (error) {
+        console.error('Error submitting proof:', error);
+        alert('Gagal mengirim bukti. Pastikan backend server sudah di-host dan URL sudah benar.');
+        return;
+    }
+    
+    // Simpan ID untuk polling
+    localStorage.setItem('purchase_id', purchaseId);
+    
+    // Tampilkan modal menunggu
+    document.getElementById('waiting-modal').classList.add('show');
+    
+    // Poll status
+    pollStatus(purchaseId);
+});
+
+// Fungsi untuk tampilkan pesan proof
+function showProofMessage(msg) {
+    const msgEl = document.getElementById('proof-message');
+    msgEl.textContent = msg;
+    msgEl.style.display = 'block';
+}
+// Handle close success
+document.getElementById('close-success').addEventListener('click', function() {
+    document.getElementById('success-modal').classList.remove('show');
+});
+
+// Handle close waiting
+document.getElementById('close-waiting').addEventListener('click', function() {
+    document.getElementById('waiting-modal').classList.remove('show');
+});
+</script>
+
+</body>
+</html>

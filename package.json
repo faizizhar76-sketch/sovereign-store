@@ -1,0 +1,19 @@
+{
+  "name": "sovereign-store",
+  "version": "1.0.0",
+  "description": "Sovereign Store - Minecraft Item Marketplace",
+  "main": "index.html",
+  "homepage": "https://YOUR_USERNAME.github.io/sovereign-store",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve . --port 3000",
+    "deploy": "gh-pages -d ."
+  },
+  "keywords": ["minecraft", "store", "marketplace"],
+  "author": "Sovereign",
+  "license": "MIT",
+  "devDependencies": {
+    "gh-pages": "^6.1.1",
+    "serve": "^14.2.1"
+  }
+}
